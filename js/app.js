@@ -3,6 +3,55 @@ const products = [
   { id: 2, name: 'Camisa Preta', price: 79.9, img: 'assets/camisa-preta.jpg' }
 ];
 
+// Map external image URLs to local copies under `assets/resources/static.zattini.com.br` when available.
+function localizeUrl(url){
+  if(!url) return url;
+  try{
+    const s = String(url);
+    // Match absolute URLs like https://static.zattini.com.br/...
+    let m = s.match(/https?:\/\/(?:www\.)?static\.zattini\.com\.br(\/.*)/i);
+    if(m) return 'assets/resources/static.zattini.com.br' + m[1];
+    // Match protocol-less URLs starting with //static.zattini.com.br/...
+    m = s.match(/^(?:\/\/)(?:www\.)?static\.zattini\.com\.br(\/.*)/i);
+    if(m) return 'assets/resources/static.zattini.com.br' + m[1];
+    return url;
+  }catch(e){ return url; }
+}
+
+function rewriteAllImages(){
+  try{
+    if(!document.querySelectorAll) return;
+    document.querySelectorAll('img').forEach(img=>{
+      const src = img.getAttribute('src') || img.src || '';
+      const newSrc = localizeUrl(src);
+      if(newSrc && newSrc !== src){
+        try{ img.src = newSrc; }catch(e){}
+      }
+    });
+  }catch(e){}
+}
+
+// Observe DOM for newly added images and rewrite their src when necessary
+try{
+  if(typeof MutationObserver !== 'undefined'){
+    const _imgObserver = new MutationObserver(mutations => {
+      mutations.forEach(m => {
+        if(m.type === 'childList' && m.addedNodes && m.addedNodes.length){
+          m.addedNodes.forEach(node => {
+            if(!node) return;
+            if(node.tagName === 'IMG'){
+              try{ const src = node.getAttribute('src') || node.src || ''; const ns = localizeUrl(src); if(ns && ns !== src) node.src = ns; }catch(e){}
+            } else if(node.querySelectorAll){
+              try{ node.querySelectorAll('img').forEach(img=>{ const src = img.getAttribute('src') || img.src || ''; const ns = localizeUrl(src); if(ns && ns !== src) img.src = ns; }); }catch(e){}
+            }
+          });
+        }
+      });
+    });
+    if(document && document.body) _imgObserver.observe(document.body, { childList:true, subtree:true });
+  }
+}catch(e){}
+
 // NOTE: Some pages (or templates) may not include the elements used
 // by this script. On case-sensitive hosts (Vercel) missing elements
 // can cause runtime exceptions that break the whole page. We'll
@@ -31,7 +80,7 @@ function renderProducts(){
     const el = document.createElement('div');
     el.className = 'product';
     el.innerHTML = `
-      <img src="${p.img}" alt="${p.name}">
+      <img src="${localizeUrl(p.img)}" alt="${p.name}">
       <h4>${p.name}</h4>
       <div class="price">R$ ${formatPrice(p.price)}</div>
       <div class="actions">
@@ -63,7 +112,7 @@ function updateCartUI(){
     const div = document.createElement('div');
     div.className = 'cart-item';
     div.innerHTML = `
-      <img src="${i.img}" alt="${i.name}">
+      <img src="${localizeUrl(i.img)}" alt="${i.name}">
       <div style="flex:1">
         <div>${i.name}</div>
         <div class="price">R$ ${formatPrice(i.price)}</div>
@@ -105,6 +154,9 @@ function initApp(){
   checkoutBtn = document.getElementById('checkout');
 
   cart = loadCart();
+
+  // Rewrite any existing <img> elements to use local copies when available
+  try{ rewriteAllImages(); }catch(e){}
 
   // Render only if productList exists
   try{
