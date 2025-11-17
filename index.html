@@ -4667,38 +4667,6 @@ A camiseta é fundamental nas tendências atuais, se destacando pela simplicidad
       csdm('mode', 'manual');
       </script>
         <script src="js/app.js"></script>
-        <script>
-          // Substitui imagens externas por versões locais para deploys
-          document.addEventListener('DOMContentLoaded', function(){
-            try{
-              const EXTERNAL_PATTERNS = ['static.zattini.com.br','static.netshoes.com.br','zattini-share.png','google-analytics.com','googletagmanager.com','hotjar.com'];
-              const localProducts = ['assets/camisa-linho.jpg','assets/camisa-preta.jpg'];
-              const placeholder = 'assets/placeholder.svg';
-              const logo = 'assets/logo.png';
-              let prodIndex = 0;
-
-              document.querySelectorAll('img').forEach(img => {
-                const src = img.getAttribute('src') || '';
-                const lower = src.toLowerCase();
-                if(!src) return;
-                if(EXTERNAL_PATTERNS.some(p => lower.includes(p))){
-                  // Heurísticas para escolher imagem local
-                  if(lower.includes('logo') || lower.includes('favicon')){
-                    img.src = logo;
-                  } else if(lower.includes('/bnn/') || lower.includes('banner') || lower.includes('1920x50') || lower.includes('stripe')){
-                    img.src = placeholder;
-                  } else if(lower.includes('/produt') || lower.includes('/prod/') || lower.includes('/produtos/')){
-                    img.src = localProducts[prodIndex % localProducts.length];
-                    prodIndex++;
-                  } else {
-                    img.src = placeholder;
-                  }
-                  img.onerror = function(){ this.src = placeholder; };
-                }
-              });
-            }catch(e){ console.warn('Erro ao substituir imagens externas:', e); }
-          });
-        </script>
         <script id="freedomAds" type="text/javascript" src="https://static.netshoes.com.br/sponsored-products-sdk/2.16.6-0/magalu-ads.js"></script>
         <script id="freedomAdsEvents" type="text/javascript" src="https://static.netshoes.com.br/sponsored-products-sdk/2.16.6-0/magalu-ads-events.js"></script>
       
