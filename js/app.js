@@ -540,3 +540,68 @@ if(document.readyState === 'loading'){
 })();
 
 // Image replacement removed — keep original external images. Initialization remains safe.
+
+// --- Diagnostic helper: image / DOM instrumentation (temporary)
+// Activate by adding `?debug=images` to the page URL.
+(function(){
+  'use strict';
+  if(!location.search || !location.search.includes('debug=images')) return;
+  try{
+    console.info('[debug-images] Instrumentation ativa (use ?debug=images)');
+
+    function attachImgHandlers(img){
+      if(!img || img._dbgAttached) return;
+      img._dbgAttached = true;
+      img.addEventListener('load', ()=>{
+        console.info('[debug-images] load', img.src);
+      });
+      img.addEventListener('error', ()=>{
+        console.error('[debug-images] error loading', img.src, img);
+      });
+    }
+
+    // Attach to existing images
+    document.querySelectorAll && document.querySelectorAll('img').forEach(attachImgHandlers);
+
+    const mo = new MutationObserver(mutations => {
+      mutations.forEach(m => {
+        if(m.type === 'childList'){
+          m.addedNodes && m.addedNodes.forEach(node => {
+            if(node.nodeType !== 1) return;
+            if(node.tagName === 'IMG') attachImgHandlers(node);
+            if(node.querySelectorAll) node.querySelectorAll('img').forEach(attachImgHandlers);
+          });
+          m.removedNodes && m.removedNodes.forEach(node => {
+            if(node.nodeType !== 1) return;
+            // report removed images inside the removed subtree
+            const removedImgs = (node.tagName === 'IMG') ? [node] : (node.querySelectorAll ? Array.from(node.querySelectorAll('img')) : []);
+            removedImgs.forEach(img => console.warn('[debug-images] removed image element', img.src, img));
+            // also list scripts present when removal happened
+            try{
+              const scriptList = Array.from(document.scripts || []).map(s=>s.src||'[inline]');
+              console.warn('[debug-images] scripts on page at removal:', scriptList);
+            }catch(e){console.warn('[debug-images] unable to list scripts', e);} 
+          });
+        } else if(m.type === 'attributes' && m.target && m.target.tagName === 'IMG'){
+          console.warn('[debug-images] img attribute changed', m.attributeName, m.target.getAttribute(m.attributeName), m.target);
+        }
+      });
+    });
+
+    mo.observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ['src','style','class'] });
+
+    // Global resource error capture (images failing to load)
+    window.addEventListener('error', function(e){
+      try{
+        if(e && e.target && e.target.tagName === 'IMG'){
+          console.error('[debug-images] resource error event', e.target.src, e);
+        }
+      }catch(ee){/* ignore */}
+    }, true);
+
+    // Helpful quick command printed for convenience
+    console.info('[debug-images] use `location.search += "&debug=images"` to enable on subsequent loads');
+  }catch(ex){
+    console.error('[debug-images] failed to initialize', ex);
+  }
+})();
