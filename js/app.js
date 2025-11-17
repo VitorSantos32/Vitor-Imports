@@ -538,3 +538,74 @@ if(document.readyState === 'loading'){
     initBannerProtection();
   }
 })();
+
+// Observe DOM and replace external images/backgrounds with local assets
+(function(){
+  'use strict';
+  try{
+    const EXTERNAL_PATTERNS = ['static.zattini.com.br','static.netshoes.com.br','zattini-share.png','google-analytics.com','googletagmanager.com','hotjar.com'];
+    const localProducts = ['assets/camisa-linho.jpg','assets/camisa-preta.jpg'];
+    const placeholder = 'assets/placeholder.svg';
+    const logo = 'assets/logo.png';
+    let prodIndex = 0;
+
+    function replaceIfExternal(img){
+      try{
+        if(!img || !(img instanceof HTMLImageElement)) return;
+        const src = img.getAttribute('src') || '';
+        const lower = src.toLowerCase();
+        if(!src) return;
+        if(EXTERNAL_PATTERNS.some(p => lower.includes(p)) || /https?:\/\//.test(src) && !src.startsWith(location.origin)){
+          if(lower.includes('logo') || lower.includes('favicon')){
+            img.src = logo;
+          } else if(lower.includes('/bnn/') || lower.includes('banner') || lower.includes('1920x50') || lower.includes('stripe')){
+            img.src = placeholder;
+          } else if(lower.includes('/produt') || lower.includes('/prod/') || lower.includes('/produtos/') || lower.match(/\.(jpg|jpeg|png|webp)(\?|$)/)){
+            img.src = localProducts[prodIndex % localProducts.length];
+            prodIndex++;
+          } else {
+            img.src = placeholder;
+          }
+          img.onerror = function(){ this.src = placeholder; };
+        }
+      }catch(e){console.warn('replaceIfExternal error', e)}
+    }
+
+    // Replace existing images immediately
+    if(document && document.querySelectorAll){
+      document.querySelectorAll('img').forEach(replaceIfExternal);
+    }
+
+    // Observe DOM mutations to catch images added later by external scripts
+    if(window.MutationObserver){
+      const observer = new MutationObserver((mutations)=>{
+        mutations.forEach(mutation => {
+          mutation.addedNodes.forEach(node => {
+            if(node.nodeType !== 1) return;
+            if(node.tagName === 'IMG'){
+              replaceIfExternal(node);
+            } else {
+              try{
+                node.querySelectorAll && node.querySelectorAll('img').forEach(replaceIfExternal);
+              }catch(e){}
+            }
+
+            // Replace external background images
+            try{
+              const elems = node.querySelectorAll ? node.querySelectorAll('*') : [];
+              elems.forEach(el => {
+                try{
+                  const bg = window.getComputedStyle(el).backgroundImage || '';
+                  if(bg && EXTERNAL_PATTERNS.some(p => bg.includes(p))){
+                    el.style.backgroundImage = `url(${placeholder})`;
+                  }
+                }catch(e){}
+              });
+            }catch(e){}
+          });
+        });
+      });
+      observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
+    }
+  }catch(e){ console.warn('image replacement bootstrap failed', e); }
+})();
