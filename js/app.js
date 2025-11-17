@@ -3,22 +3,29 @@ const products = [
   { id: 2, name: 'Camisa Preta', price: 79.9, img: 'assets/camisa-preta.jpg' }
 ];
 
-const productList = document.getElementById('product-list');
-const cartButton = document.getElementById('cart-button');
-const cartCount = document.getElementById('cart-count');
-const cartModal = document.getElementById('cart-modal');
-const closeCart = document.getElementById('close-cart');
-const cartItemsEl = document.getElementById('cart-items');
-const cartTotalEl = document.getElementById('cart-total');
-const checkoutBtn = document.getElementById('checkout');
+// NOTE: Some pages (or templates) may not include the elements used
+// by this script. On case-sensitive hosts (Vercel) missing elements
+// can cause runtime exceptions that break the whole page. We'll
+// safely initialize only when DOM is ready and required elements exist.
 
-let cart = loadCart();
+let cart = [];
+
+// Elements (will be looked up on DOMContentLoaded)
+let productList = null;
+let cartButton = null;
+let cartCount = null;
+let cartModal = null;
+let closeCart = null;
+let cartItemsEl = null;
+let cartTotalEl = null;
+let checkoutBtn = null;
 
 function formatPrice(v){
   return v.toFixed(2).replace('.', ',');
 }
 
 function renderProducts(){
+  if(!productList) return;
   productList.innerHTML = '';
   products.forEach(p =>{
     const el = document.createElement('div');
@@ -48,6 +55,7 @@ function addToCart(id){
 }
 
 function updateCartUI(){
+  if(!cartCount || !cartItemsEl || !cartTotalEl) return;
   const totalQty = cart.reduce((s,i)=>s+i.qty,0);
   cartCount.textContent = totalQty;
   cartItemsEl.innerHTML = '';
@@ -82,30 +90,65 @@ function updateCartUI(){
   cartTotalEl.textContent = formatPrice(total);
 }
 
-function saveCart(){ localStorage.setItem('lojara_cart', JSON.stringify(cart)); }
+function saveCart(){ try{ localStorage.setItem('lojara_cart', JSON.stringify(cart)); }catch(e){} }
 function loadCart(){ try{ return JSON.parse(localStorage.getItem('lojara_cart'))||[] }catch(e){return []} }
 
-cartButton.addEventListener('click', ()=>{ cartModal.setAttribute('aria-hidden','false'); });
-closeCart.addEventListener('click', ()=>{ cartModal.setAttribute('aria-hidden','true'); });
-cartModal.addEventListener('click', (e)=>{ if(e.target===cartModal) cartModal.setAttribute('aria-hidden','true'); });
+// Safe initialization after DOM ready
+function initApp(){
+  productList = document.getElementById('product-list');
+  cartButton = document.getElementById('cart-button');
+  cartCount = document.getElementById('cart-count');
+  cartModal = document.getElementById('cart-modal');
+  closeCart = document.getElementById('close-cart');
+  cartItemsEl = document.getElementById('cart-items');
+  cartTotalEl = document.getElementById('cart-total');
+  checkoutBtn = document.getElementById('checkout');
 
-checkoutBtn.addEventListener('click', ()=>{
-  if(cart.length===0){ alert('Seu carrinho está vazio.'); return }
-  alert('Obrigado pela compra! (simulação)');
-  cart = [];
-  saveCart(); updateCartUI();
-  cartModal.setAttribute('aria-hidden','true');
-});
+  cart = loadCart();
 
-document.getElementById('contact-form').addEventListener('submit', e=>{
-  e.preventDefault();
-  alert('Mensagem enviada! (simulação)');
-  e.target.reset();
-});
+  // Render only if productList exists
+  try{
+    renderProducts();
+    updateCartUI();
+  }catch(e){
+    console.warn('Erro ao renderizar produtos/cart UI:', e);
+  }
 
-// init
-renderProducts();
-updateCartUI();
+  if(cartButton && cartModal){
+    cartButton.addEventListener('click', ()=>{ cartModal.setAttribute('aria-hidden','false'); });
+  }
+  if(closeCart && cartModal){
+    closeCart.addEventListener('click', ()=>{ cartModal.setAttribute('aria-hidden','true'); });
+  }
+  if(cartModal){
+    cartModal.addEventListener('click', (e)=>{ if(e.target===cartModal) cartModal.setAttribute('aria-hidden','true'); });
+  }
+
+  if(checkoutBtn){
+    checkoutBtn.addEventListener('click', ()=>{
+      if(cart.length===0){ alert('Seu carrinho está vazio.'); return }
+      alert('Obrigado pela compra! (simulação)');
+      cart = [];
+      saveCart(); updateCartUI();
+      if(cartModal) cartModal.setAttribute('aria-hidden','true');
+    });
+  }
+
+  const contactForm = document.getElementById('contact-form');
+  if(contactForm){
+    contactForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      alert('Mensagem enviada! (simulação)');
+      e.target.reset();
+    });
+  }
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 // --- Inject custom logo into pages that use .logo__image (e.g. Zattini template)
 (function(){
