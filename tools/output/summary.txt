@@ -1,0 +1,12 @@
+﻿Resource summary for: https://www.zattini.com.br/camisetas/masculino/nike
+Timestamp: 2025-11-17T20:37:15.511Z
+
+- observed : 367
+- css : 6
+- js : 59
+- images : 144
+- preloads : 9
+- links : 148
+
+Downloaded resources folder: C:\Users\Administrator\Downloads\vs\tools\output\resources
+Generated files: C:\Users\Administrator\Downloads\vs\tools\output\url-map.json, C:\Users\Administrator\Downloads\vs\tools\output\images-list.txt

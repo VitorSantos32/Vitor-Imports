@@ -1,0 +1,2 @@
+// 5.18.4
+CleverCore.Registry.User = {"c":"BR","r":"BA","cont":"SA","b":"node-fetch","bv":"1","p":"unknown","d":0,"bot":1,"t":1763411907,"e":"FcBOrzEk","s":"de1ac9b67fed8a007a1e2d7eaaac69b2e1a339b6cdf276a7a7f0bcd5b836d3ca"}

@@ -1,0 +1,1 @@
+{"sdk":"WEB","publisherId":"zattini","view":"SEARCH","version":"1.0.0","configuration":{"placements":[{"name":"CAROUSEL","template":"https://static.netshoes.com.br/sponsored-products-templates/1.13.5/zattini/search-carousel.html","engine":"handlebars","elementQuery":"#magalu-ads-mid","position":"beforeend","type":"SPONSORED_PRODUCT","numberOfAds":10}]}}
