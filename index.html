@@ -10,6 +10,68 @@
     <link rel="stylesheet" href="https://static.netshoes.com.br/webstore-navigation-view/ff854dea2c/zattini/vendors.6a1cce9250cae9078ca2.css"><link rel="stylesheet" href="https://static.netshoes.com.br/webstore-navigation-view/ff854dea2c/zattini/main.6a1cce9250cae9078ca2.css"><link rel="stylesheet" href="https://static.netshoes.com.br/webstore-navigation-view/ff854dea2c/zattini/474.css"><link rel="stylesheet" href="https://static.netshoes.com.br/webstore-navigation-view/ff854dea2c/zattini/489.css">
     <title>Camiseta Masculina: Perfomance e Estilo em Promoção</title>
       <meta name="description" content="Encontre camiseta da nike masculina perfeitas para qualquer ocasião! Qualidade, conforto e preço baixo te esperam. Não perca tempo, confira nossas promoções!"/>
+      <!-- Temporary API stub: prevents template scripts from clearing content when back-end endpoints 404.
+           This intercepts fetch/XHR for known internal endpoints and returns minimal 200 JSON.
+           Remove this block once you either host those APIs or remove the external template bundles. -->
+      <script>
+      (function(){
+        'use strict';
+        const PATHS = [
+          '/api/minicart','/recommendations','/tracking','/metadata','/api/offer','/api/daily-offer','/api/zipcode','/pushnews-sw.js','/api/'
+        ];
+        function isStubUrl(url){
+          try{
+            const u = new URL(url, location.origin);
+            const p = u.pathname || '';
+            return PATHS.some(pref => p.indexOf(pref) === 0 || p.includes(pref));
+          }catch(e){
+            return PATHS.some(pref => (''+url).indexOf(pref) !== -1);
+          }
+        }
+
+        // Stub fetch
+        const realFetch = window.fetch && window.fetch.bind(window);
+        if(realFetch){
+          window.fetch = function(input, init){
+            const url = (typeof input === 'string') ? input : (input && input.url) || '';
+            if(isStubUrl(url)){
+              console.warn('[api-stub] intercepted fetch', url);
+              const body = JSON.stringify({});
+              return Promise.resolve(new Response(body, { status: 200, headers: {'Content-Type':'application/json'} }));
+            }
+            return realFetch(input, init);
+          };
+        }
+
+        // Stub XHR
+        if(window.XMLHttpRequest){
+          const XProto = XMLHttpRequest.prototype;
+          const origOpen = XProto.open;
+          const origSend = XProto.send;
+          XProto.open = function(method, url){
+            this._requestedUrl = url;
+            return origOpen.apply(this, arguments);
+          };
+          XProto.send = function(body){
+            try{
+              if(isStubUrl(this._requestedUrl)){
+                console.warn('[api-stub-xhr] intercepted', this._requestedUrl);
+                this.readyState = 4;
+                this.status = 200;
+                this.response = '{}';
+                this.responseText = '{}';
+                if(typeof this.onload === 'function') setTimeout(()=> this.onload({target:this}), 0);
+                if(typeof this.onreadystatechange === 'function') setTimeout(()=> this.onreadystatechange({target:this}), 0);
+                return;
+              }
+            }catch(e){/* ignore */}
+            return origSend.apply(this, arguments);
+          };
+        }
+
+        console.info('[api-stub] active: intercepting internal API calls (temporary)');
+      })();
+      </script>
       <meta name="robots" content="index, follow" /><link rel="canonical" href="https://www.zattini.com.br/camisetas/masculino/nike" />
       <link rel="icon" href="https://static.zattini.com.br/webstore-navigation-view/L_ZATTINI/images/favicon.ico" type="image/x-icon" /><meta property="og:description" content="Encontre camiseta da nike masculina perfeitas para qualquer ocasião! Qualidade, conforto e preço baixo te esperam. Não perca tempo, confira nossas promoções!">
     <meta property="og:title" content="Camiseta Masculina: Perfomance e Estilo em Promoção">
